@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sobre Nós — ConectaDoa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hero-pattern {
+      background-color: #064e3b;
+      background-image: radial-gradient(at 80% 0%, hsla(158, 82%, 35%, 0.45) 0px, transparent 50%),
+                        radial-gradient(at 0% 100%, hsla(168, 76%, 22%, 0.7) 0px, transparent 55%);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fadeUp 0.4s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-emerald-200 selection:text-emerald-950">
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+          <i class="ph-fill ph-hand-heart text-2xl"></i>
+        </div>
+        <div>
+          <span class="font-display font-extrabold text-xl tracking-tight text-slate-900">Conecta<span class="text-emerald-600">Doa</span></span>
+          <span class="hidden sm:block text-[11px] font-medium text-slate-500 -mt-1">Rede Solidária Comunitária</span>
+        </div>
+      </a>
+
+      <nav class="flex items-center gap-2 sm:gap-4">
+        <a href="/index.html" class="text-sm font-semibold text-slate-600 hover:text-emerald-700 hover:bg-slate-100 px-3 py-2 rounded-xl transition-colors">
+          Pontos de Coleta
+        </a>
+        <a href="/sobre.html" class="text-sm font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl transition-colors">
+          Sobre Nós
+        </a>
+        <a href="/index.html" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm shadow-emerald-600/25 transition-all">
+          <i class="ph-bold ph-map-pin text-base"></i>
+          <span class="hidden sm:inline">Encontrar pontos</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-pattern text-white pt-14 pb-20 px-4 sm:px-6 relative overflow-hidden">
+    <div class="max-w-6xl mx-auto relative z-10 text-center max-w-3xl">
+      <div class="inline-flex items-center gap-2 bg-emerald-950/50 border border-emerald-400/25 rounded-full px-3.5 py-1 text-xs font-medium text-emerald-200 mb-4">
+        <i class="ph-fill ph-heart text-emerald-400"></i>
+        <span>Tecnologia a serviço da solidariedade local</span>
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
+        Transformando boa vontade em <span class="text-emerald-300">impacto real no bairro.</span>
+      </h1>
+      <p class="mt-4 text-emerald-100/90 text-base sm:text-lg leading-relaxed">
+        Conheça a história por trás do ConectaDoa, os desafios comunitários que nos motivaram e as metas que estamos construindo junto com instituições e doadores.
+      </p>
+    </div>
+  </section>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-14 space-y-20">
+
+    <!-- Seção 1: O Motivo do Projeto -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center animate-fade-up">
+      <div class="lg:col-span-6 space-y-5">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+          <i class="ph-bold ph-lightbulb"></i> O Motivo do Projeto
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+          Por que criamos o ConectaDoa?
+        </h2>
+        <p class="text-slate-600 leading-relaxed">
+          Muitas pessoas desejam doar alimentos, roupas e itens de higiene, mas não sabem quais instituições confiáveis existem perto de suas casas ou quais produtos estão realmente em falta no momento.
+        </p>
+        <p class="text-slate-600 leading-relaxed">
+          Ao mesmo tempo, pequenos projetos comunitários, igrejas e associações de bairro enfrentam dificuldades para divulgar suas campanhas emergenciais e acabam recebendo itens repetidos enquanto faltam suprimentos essenciais.
+        </p>
+        <div class="bg-white border-l-4 border-emerald-500 rounded-r-2xl p-4 shadow-sm border border-slate-200/80">
+          <p class="text-sm font-medium text-slate-700 italic">
+            "Nossa missão é encurtar a distância entre quem quer ajudar e quem mais precisa, usando tecnologia acessível, geolocalização e comunicação direta."
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6">
+        <div class="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200/80 group">
+          <img
+            src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1000&q=80"
+            alt="Voluntários organizando caixas de doação de alimentos"
+            class="w-full h-[360px] object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent flex items-end p-6">
+            <div class="text-white">
+              <span class="text-xs font-semibold bg-emerald-600 px-2.5 py-1 rounded-lg">Ação Comunitária</span>
+              <p class="text-sm font-medium mt-2 text-slate-100">Organização e triagem de cestas básicas para famílias atendidas localmente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção 2: Nossos Objetivos -->
+    <section class="space-y-8">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+          <i class="ph-bold ph-target"></i> Nossos Objetivos
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">
+          Pilares que guiam a plataforma
+        </h2>
+        <p class="text-sm sm:text-base text-slate-600 mt-2">
+          Cada funcionalidade do sistema foi pensada para resolver problemas reais na logística da solidariedade urbana.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Objetivo 1 -->
+        <article class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
+            <i class="ph-fill ph-map-pin-line text-2xl"></i>
+          </div>
+          <h3 class="font-bold text-lg text-slate-900 mb-2">Visibilidade Local</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Mapear e dar destaque a pontos de coleta comunitários por bairro, permitindo que o doador encontre iniciativas a poucos minutos de casa e trace rotas pelo mapa.
+          </p>
+        </article>
+
+        <!-- Objetivo 2 -->
+        <article class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
+            <i class="ph-fill ph-siren text-2xl"></i>
+          </div>
+          <h3 class="font-bold text-lg text-slate-900 mb-2">Priorização de Urgências</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Destacar em tempo real quais instituições estão com estoque crítico e especificar exatamente os itens mais necessários (como leite, fraldas ou agasalhos).
+          </p>
+        </article>
+
+        <!-- Objetivo 3 -->
+        <article class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center mb-4">
+            <i class="ph-fill ph-whatsapp-logo text-2xl"></i>
+          </div>
+          <h3 class="font-bold text-lg text-slate-900 mb-2">Conexão Sem Intermediários</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Conectar o cidadão diretamente ao responsável da instituição via WhatsApp, com endereços validados automaticamente e autonomia para as ONGs atualizarem seus dados.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Seção 3: Galeria Ilustrativa de Ações Sociais -->
+    <section class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+            <i class="ph-bold ph-users-three"></i> Solidariedade na Prática
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">
+            Frentes de arrecadação apoiadas
+          </h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm group">
+          <div class="h-52 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80"
+              alt="Distribuição comunitária e apoio a famílias"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+          <div class="p-5">
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">Segurança Alimentar</span>
+            <h3 class="font-bold text-base text-slate-900 mt-2">Combate à Fome nos Bairros</h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Apoio direto a cozinhas solidárias e bancos de alimentos que distribuem refeições e cestas básicas semanalmente.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm group">
+          <div class="h-52 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=800&q=80"
+              alt="Mãos unidas representando doação e voluntariado"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+          <div class="p-5">
+            <span class="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-md">Vestuário e Acolhimento</span>
+            <h3 class="font-bold text-base text-slate-900 mt-2">Campanhas de Agasalhos</h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Mobilização rápida durante quedas de temperatura para arrecadar cobertores, calçados e roupas em bom estado.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm group">
+          <div class="h-52 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=800&q=80"
+              alt="Equipe de voluntários trabalhando juntos"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+          <div class="p-5">
+            <span class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">Saúde e Dignidade</span>
+            <h3 class="font-bold text-base text-slate-900 mt-2">Kits de Higiene e Cuidados</h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Arrecadação de fraldas infantis e geriátricas, sabonetes e produtos de limpeza para abrigos e centros comunitários.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção 4: Metas a Serem Cumpridas -->
+    <section class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-sm">
+      <div class="max-w-2xl mb-8">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+          <i class="ph-bold ph-flag-checkered"></i> Metas e Próximos Passos
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">
+          Metas a serem cumpridas
+        </h2>
+        <p class="text-sm sm:text-base text-slate-600 mt-2">
+          Acompanhe o plano de crescimento e impacto social estabelecido para a evolução contínua do ConectaDoa.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Meta 1 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">Meta 01 • Curto Prazo</span>
+            <span class="text-xs font-bold text-emerald-700">Concluída ✓</span>
+          </div>
+          <h3 class="font-bold text-base text-slate-900">Plataforma Web com Validação Geográfica</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Lançar o portal responsivo integrado à verificação automática de endereços e notificação instantânea via WhatsApp para instituições cadastradas.
+          </p>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-emerald-600 h-full w-full rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Meta 2 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">Meta 02 • Em Andamento</span>
+            <span class="text-xs font-bold text-amber-700">65%</span>
+          </div>
+          <h3 class="font-bold text-base text-slate-900">Cadastrar 25 Pontos Ativos na Zona Norte</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Mapear e integrar lideranças comunitárias, paróquias e ONGs locais dos bairros Jardim Brasil, Santana, Vila Maria e Parque Novo Mundo.
+          </p>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-amber-500 h-full w-[65%] rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Meta 3 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-800 bg-sky-100 px-2.5 py-1 rounded-lg">Meta 03 • Médio Prazo</span>
+            <span class="text-xs font-bold text-sky-700">Planejada</span>
+          </div>
+          <h3 class="font-bold text-base text-slate-900">Mapa Interativo por Geolocalização (GPS)</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Implementar visualização em mapa interativo calculando automaticamente a distância em quilômetros entre o doador e o ponto mais próximo.
+          </p>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-sky-500 h-full w-[30%] rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Meta 4 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-800 bg-purple-100 px-2.5 py-1 rounded-lg">Meta 04 • Longo Prazo</span>
+            <span class="text-xs font-bold text-purple-700">Planejada</span>
+          </div>
+          <h3 class="font-bold text-base text-slate-900">Relatórios Mensais de Impacto Social</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Permitir que cada instituição registre o volume de doações recebidas pela plataforma, gerando indicadores públicos de transparência comunitária.
+          </p>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="bg-purple-500 h-full w-[15%] rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call to Action Final -->
+      <div class="mt-10 pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="font-bold text-lg text-slate-900">Pronto para fazer parte dessa corrente?</h4>
+          <p class="text-sm text-slate-500">Explore os pontos próximos a você ou cadastre uma nova iniciativa social.</p>
+        </div>
+        <a href="/index.html" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md shadow-emerald-600/20 transition-all shrink-0">
+          <span>Ir para Pontos de Coleta</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200/80 py-8 px-4 sm:px-6 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="font-medium text-slate-600">ConectaDoa • Projeto de Extensão Universitária (ADS)</p>
+      <p>Validação geográfica integrada & comunicação direta com instituições sociais.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

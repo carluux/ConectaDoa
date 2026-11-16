@@ -1,0 +1,14 @@
+# Banco de dados SQLite local e arquivos temporários
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Dependências e variáveis de ambiente
+node_modules/
+.env
+
+# Arquivos do sistema operacional e editor
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,9 @@
+{
+  "name": "conectadoa",
+  "version": "1.0.0",
+  "description": "ConectaDoa - rastreio de pontos de doação do bairro (API + site)",
+  "main": "server.js",
+  "scripts": { "start": "node --no-warnings server.js" },
+  "engines": { "node": ">=22.13" },
+  "license": "MIT"
+}
