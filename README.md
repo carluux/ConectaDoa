@@ -3,6 +3,9 @@
 > **Conectando quem quer ajudar a quem mais precisa na sua região.**  
 > Plataforma web desenvolvida como Projeto de Extensão Universitária em Análise e Desenvolvimento de Sistemas (ADS) para mapear pontos de arrecadação comunitária, destacar demandas urgentes e facilitar o contato direto entre doadores e instituições sociais.
 
+🌐 **Acesse a plataforma online:** [https://conectadoa.onrender.com](https://conectadoa.onrender.com)  
+*(Nota: Como o projeto utiliza hospedagem gratuita no Render, o primeiro acesso após inatividade pode levar cerca de 30 segundos para inicializar o servidor).*
+
 ---
 
 ## 🎯 Sobre o Projeto
@@ -51,7 +54,6 @@ ConectaDoa/
 ├── package.json         # Metadados e script de inicialização
 ├── .gitignore           # Arquivos ignorados no versionamento
 └── README.md            # Documentação do projeto
-
 ```
 
 ---
