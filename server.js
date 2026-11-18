@@ -33,6 +33,27 @@ const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '
 const sha = s => crypto.createHash('sha256').update(s).digest();
 const igual = (a, b) => crypto.timingSafeEqual(sha(a), sha(b));
 
+// --- Integração Compartilhada com n8n ---
+async function validarComN8n(payload) {
+  let resultadoN8n = null;
+  try {
+    const responseN8n = await fetch('http://localhost:5678/webhook/validar-e-notificar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (responseN8n.ok) {
+      resultadoN8n = await responseN8n.json();
+    }
+  } catch (errN8n) {
+    console.warn('Aviso: n8n indisponível no momento:', errN8n.message);
+  }
+
+  if (resultadoN8n && resultadoN8n.enderecoValido === false) {
+    throw falha(400, 'Endereço não localizado ou não verificado no Google Maps.');
+  }
+}
+
 // --- Funções ConectaDoa ---
 function inserir(d, chaveHash = null) {
   const busca = norm([d.nome, d.bairro, d.endereco, d.descricao, d.categoria, d.itensUrgentes].join(' '));
@@ -199,23 +220,7 @@ async function api(req, res, url) {
     const { d, e } = validar(await corpo(req));
     if (Object.keys(e).length) throw falha(422, 'Dados inválidos.', Object.values(e));
 
-    let resultadoN8n = null;
-    try {
-      const responseN8n = await fetch('http://localhost:5678/webhook/validar-e-notificar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(d)
-      });
-      if (responseN8n.ok) {
-        resultadoN8n = await responseN8n.json();
-      }
-    } catch (errN8n) {
-      console.warn('Aviso: n8n indisponível no momento:', errN8n.message);
-    }
-
-    if (resultadoN8n && resultadoN8n.enderecoValido === false) {
-      throw falha(400, 'Endereço não localizado ou não verificado no Google Maps.');
-    }
+    await validarComN8n({ ...d, origem: 'ConectaDoa' });
 
     const chave = crypto.randomBytes(24).toString('hex');
     const id = inserir(d, sha(chave).toString('hex'));
@@ -265,6 +270,16 @@ async function api(req, res, url) {
     if (!(req.headers['content-type'] || '').includes('application/json')) throw falha(415, 'Envie JSON.');
 
     const d = validarArte(await corpo(req));
+
+    await validarComN8n({
+      nome: d.titulo,
+      bairro: d.bairro,
+      endereco: d.endereco,
+      whats: d.contato,
+      categoria: d.categoria,
+      origem: 'ConectaArte'
+    });
+
     const chave = crypto.randomBytes(24).toString('hex');
     const busca = norm([d.titulo, d.categoria, d.bairro, d.endereco, d.descricao, d.organizador].join(' '));
     const info = db.prepare(`INSERT INTO eventos_arte(titulo,categoria,bairro,endereco,data_horario,entrada,descricao,organizador,contato,instagram,destaque,conexoes,chave_hash,busca,criado_em) VALUES(?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)`)
