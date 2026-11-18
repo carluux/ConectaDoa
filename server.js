@@ -313,5 +313,6 @@ http.createServer(async (req, res) => {
     if (!res.headersSent) json(res, e.st || 500, { erro: e.st ? e.message : 'Erro interno.', detalhes: e.detalhes });
   }
 }).listen(process.env.PORT || 3000, process.env.HOST || '0.0.0.0', function () {
-  console.log(`ConectaDoa & ConectaArte rodando em http://${this.address().address}:${this.address().port}`);
+  const hostExibicao = this.address().address === '0.0.0.0' ? 'localhost' : this.address().address;
+  console.log(`ConectaDoa & ConectaArte rodando em http://${hostExibicao}:${this.address().port}`);
 });
