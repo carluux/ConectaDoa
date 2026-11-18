@@ -156,7 +156,7 @@
               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-[#F6F6F6] focus:bg-white focus:border-[#B84FCE] focus:outline-none text-sm"
             />
           </div>
-          <button id="btnPertoDeMimArte" type="button" title="Detectar meu bairro pelo GPS"
+          <button id="btnPertoDeMimArte" type="button" title="Detectar meu bairro e espaços culturais próximos pelo GPS"
             class="inline-flex items-center gap-1.5 bg-[#F3E5F7] hover:bg-[#e8cef0] text-[#8E32A3] border border-[#B84FCE]/30 font-bold text-xs px-3 py-2.5 rounded-xl shrink-0 transition cursor-pointer">
             <i class="ph-fill ph-crosshair text-base text-[#B84FCE]"></i>
             <span class="hidden sm:inline">Perto de mim</span>
@@ -192,9 +192,24 @@
       <div class="w-14 h-14 rounded-2xl bg-[#F3E5F7] text-[#B84FCE] flex items-center justify-center mx-auto mb-3">
         <i class="ph-fill ph-palette text-3xl"></i>
       </div>
-      <h3 class="font-bold text-lg text-slate-800">Nenhum evento encontrado com esse filtro</h3>
-      <p class="text-sm text-slate-500 mt-1">Tente limpar a busca ou cadastre uma nova oficina ou movimento cultural.</p>
+      <h3 class="font-bold text-lg text-slate-800">Nenhum evento cadastrado com esse filtro</h3>
+      <p id="descVazioArte" class="text-sm text-slate-500 mt-1">Tente limpar a busca ou cadastre uma nova oficina ou movimento cultural.</p>
     </div>
+
+    <!-- Seção de Centros Culturais e Espaços Já Existentes na Vizinhança (OpenStreetMap) -->
+    <section id="secaoExternosArte" class="hidden mt-12 pt-8 border-t border-slate-200">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+        <div>
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#8E32A3] bg-[#F3E5F7] border border-[#B84FCE]/30 px-2.5 py-0.5 rounded-full mb-1">
+            <i class="ph-fill ph-globe-hemisphere-west"></i> Mapeamento Cultural (OpenStreetMap)
+          </span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Espaços culturais, bibliotecas e coletivos já existentes perto de você</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Locais culturais mapeados num raio de 3 km na sua região.</p>
+        </div>
+        <span id="contadorExternosArte" class="text-xs font-bold bg-[#F3E5F7] text-[#8E32A3] px-3 py-1 rounded-full"></span>
+      </div>
+      <div id="gridExternosArte" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
   </main>
 
   <!-- Rodapé -->
@@ -348,6 +363,7 @@
     const STORAGE_ADMIN = 'conectadoa_admin_token';
 
     let eventosCache = [];
+    let locaisExternosArteCache = [];
     let interessesUsuario = JSON.parse(localStorage.getItem(STORAGE_QUIZ) || '[]');
 
     function getChaves() {
@@ -367,6 +383,70 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[m]));
     }
+
+    function renderizarExternosArte(bairroPadrao = '') {
+      const sec = document.getElementById('secaoExternosArte');
+      const gridExt = document.getElementById('gridExternosArte');
+      if (!locaisExternosArteCache.length) {
+        sec.classList.add('hidden');
+        return;
+      }
+
+      sec.classList.remove('hidden');
+      document.getElementById('contadorExternosArte').textContent = `${locaisExternosArteCache.length} espaço(s) mapeado(s)`;
+
+      gridExt.innerHTML = locaisExternosArteCache.map((loc, idx) => {
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.nome + ' ' + loc.endereco)}`;
+        const distTexto = loc.distanciaKm < 1 ? `${Math.round(loc.distanciaKm * 1000)} m de você` : `${loc.distanciaKm} km de você`;
+
+        return `
+          <article class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
+            <div class="p-5">
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg bg-[#F3E5F7] text-[#8E32A3]">
+                  <i class="ph-fill ph-buildings"></i> ${escapeHtml(loc.subtipo)}
+                </span>
+                <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  ${escapeHtml(distTexto)}
+                </span>
+              </div>
+
+              <h3 class="font-extrabold text-base text-slate-900 leading-snug">${escapeHtml(loc.nome)}</h3>
+              <p class="text-xs text-slate-600 mt-2 flex items-start gap-1.5 leading-relaxed">
+                <i class="ph-fill ph-map-pin text-[#B84FCE] text-base shrink-0"></i>
+                <span>${escapeHtml(loc.endereco)}</span>
+              </p>
+              ${loc.telefone ? `<p class="text-xs text-slate-500 mt-1.5 pl-5">Tel: ${escapeHtml(loc.telefone)}</p>` : ''}
+            </div>
+
+            <div class="px-5 pb-5 pt-2 flex items-center justify-between gap-2">
+              <button type="button" onclick="reivindicarLocalArte(${idx}, '${escapeHtml(bairroPadrao)}')"
+                class="text-xs font-bold text-[#8E32A3] hover:underline cursor-pointer">
+                + Divulgar atividade aqui
+              </button>
+              <a href="${mapsUrl}" target="_blank" rel="noopener"
+                class="inline-flex items-center gap-1.5 bg-[#B84FCE] hover:bg-[#9D38B2] text-white font-bold text-xs py-2 px-3 rounded-xl transition">
+                <i class="ph-bold ph-navigation-arrow"></i>
+                <span>Ver no mapa</span>
+              </a>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    window.reivindicarLocalArte = (idx, bairroPadrao) => {
+      const loc = locaisExternosArteCache[idx];
+      if (!loc) return;
+      formEvento.reset();
+      document.getElementById('eventoId').value = '';
+      document.getElementById('tituloModal').textContent = 'Divulgar Evento ou Oficina Cultural';
+      document.getElementById('organizador').value = loc.nome;
+      document.getElementById('bairro').value = loc.bairro || bairroPadrao;
+      document.getElementById('endereco').value = loc.endereco;
+      document.getElementById('msgErroForm').classList.add('hidden');
+      modalEvento.classList.remove('hidden');
+    };
 
     async function carregarEventos() {
       const busca = document.getElementById('inputBusca').value;
@@ -412,6 +492,9 @@
 
       if (listaOrdenada.length === 0) {
         grid.innerHTML = '';
+        document.getElementById('descVazioArte').textContent = locaisExternosArteCache.length
+          ? 'Veja abaixo os espaços culturais já existentes na sua região ou cadastre uma nova atividade.'
+          : 'Tente limpar a busca ou cadastre uma nova oficina ou movimento cultural.';
         vazio.classList.remove('hidden');
         return;
       }
@@ -657,20 +740,26 @@
 
       const htmlOriginal = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i><span>Localizando...</span>';
+      btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i><span>Buscando...</span>';
 
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           try {
             const { latitude, longitude } = pos.coords;
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=pt-BR`);
-            const geo = await resp.json();
+            const [respGeo, respExt] = await Promise.all([
+              fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=pt-BR`),
+              fetch(`/api/externos?tipo=arte&lat=${latitude}&lon=${longitude}`)
+            ]);
+
+            const geo = await respGeo.json();
             const end = geo.address || {};
             const bairro = end.suburb || end.neighbourhood || end.city_district || end.town || end.city || '';
 
-            if (!bairro) throw new Error('Não foi possível identificar o nome do seu bairro.');
+            const extJson = await respExt.json().catch(() => ({ dados: [] }));
+            locaisExternosArteCache = extJson.dados || [];
 
-            document.getElementById('inputBusca').value = bairro;
+            if (bairro) document.getElementById('inputBusca').value = bairro;
+            renderizarExternosArte(bairro);
             await carregarEventos();
           } catch (err) {
             alert(err.message || 'Erro ao consultar localização.');

@@ -54,6 +54,100 @@ async function validarComN8n(payload) {
   }
 }
 
+// --- Busca de Instituições e Espaços Culturais Reais (OpenStreetMap Overpass API) ---
+const cacheExterno = new Map();
+function calcDistanciaKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function buscarLocaisExternos(tipo, lat, lon) {
+  const chaveCache = `${tipo}:${lat.toFixed(2)}:${lon.toFixed(2)}`;
+  const cached = cacheExterno.get(chaveCache);
+  if (cached && cached.exp > Date.now()) return cached.dados;
+
+  const raio = 3000; // 3 km
+  const filtros = tipo === 'arte'
+    ? `
+      node["amenity"~"arts_centre|theatre|library|music_school|dancing_school"](around:${raio},${lat},${lon});
+      way["amenity"~"arts_centre|theatre|library|music_school|dancing_school"](around:${raio},${lat},${lon});
+      node["leisure"~"dance|bandstand"](around:${raio},${lat},${lon});
+      node["club"~"music|art|culture|sport"](around:${raio},${lat},${lon});
+    `
+    : `
+      node["office"~"ngo|charity|association"](around:${raio},${lat},${lon});
+      way["office"~"ngo|charity|association"](around:${raio},${lat},${lon});
+      node["amenity"~"social_facility|community_centre"](around:${raio},${lat},${lon});
+      way["amenity"~"social_facility|community_centre"](around:${raio},${lat},${lon});
+      node["amenity"="place_of_worship"]["name"](around:${raio},${lat},${lon});
+    `;
+
+  const query = `[out:json][timeout:12];(${filtros});out center 25;`;
+  const resp = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body: 'data=' + encodeURIComponent(query)
+  });
+
+  if (!resp.ok) return [];
+  const data = await resp.json();
+  const vistos = new Set();
+  const resultados = [];
+
+  for (const el of (data.elements || [])) {
+    const tags = el.tags || {};
+    const nome = (tags.name || '').trim();
+    if (!nome || vistos.has(nome.toLowerCase())) continue;
+    vistos.add(nome.toLowerCase());
+
+    const elLat = el.lat ?? el.center?.lat;
+    const elLon = el.lon ?? el.center?.lon;
+    if (typeof elLat !== 'number' || typeof elLon !== 'number') continue;
+
+    const rua = tags['addr:street'] || '';
+    const num = tags['addr:housenumber'] || '';
+    const bairro = tags['addr:suburb'] || tags['addr:neighbourhood'] || '';
+    const endereco = [rua && num ? `${rua}, ${num}` : rua, bairro].filter(Boolean).join(' - ') || 'Endereço mapeado no OpenStreetMap';
+
+    let subtipo = 'Instituição Comunitária';
+    if (tipo === 'arte') {
+      if (tags.amenity === 'library') subtipo = 'Biblioteca / Leitura';
+      else if (tags.amenity === 'theatre') subtipo = 'Teatro & Artes Cênicas';
+      else if (tags.amenity === 'arts_centre') subtipo = 'Centro Cultural';
+      else if (tags.amenity === 'music_school' || tags.club === 'music') subtipo = 'Música';
+      else if (tags.amenity === 'dancing_school' || tags.leisure === 'dance') subtipo = 'Dança';
+      else subtipo = 'Espaço Cultural / Movimento';
+    } else {
+      if (tags.office === 'ngo' || tags.office === 'charity') subtipo = 'ONG / Entidade Social';
+      else if (tags.amenity === 'social_facility') subtipo = 'Assistência Social';
+      else if (tags.amenity === 'community_centre') subtipo = 'Centro Comunitário';
+      else if (tags.amenity === 'place_of_worship') subtipo = 'Igreja / Ação Paroquial';
+    }
+
+    const distKm = calcDistanciaKm(lat, lon, elLat, elLon);
+    resultados.push({
+      nome,
+      subtipo,
+      bairro,
+      endereco,
+      lat: elLat,
+      lon: elLon,
+      distanciaKm: Number(distKm.toFixed(2)),
+      telefone: (tags.phone || tags['contact:phone'] || tags['contact:whatsapp'] || '').trim(),
+      horario: (tags.opening_hours || '').trim()
+    });
+  }
+
+  resultados.sort((a, b) => a.distanciaKm - b.distanciaKm);
+  const top12 = resultados.slice(0, 12);
+  cacheExterno.set(chaveCache, { dados: top12, exp: Date.now() + 10 * 60 * 1000 });
+  return top12;
+}
+
 // --- Funções ConectaDoa ---
 function inserir(d, chaveHash = null) {
   const busca = norm([d.nome, d.bairro, d.endereco, d.descricao, d.categoria, d.itensUrgentes].join(' '));
@@ -187,6 +281,22 @@ async function api(req, res, url) {
   const espera = limitar('g' + ip, 120, 60000);
   if (espera) { res.setHeader('Retry-After', espera); throw falha(429, 'Muitas requisições. Aguarde um instante.'); }
   const p = url.pathname, m = req.method;
+
+  // Rota de descoberta de instituições e espaços culturais reais na região (OpenStreetMap)
+  if (p === '/api/externos' && m === 'GET') {
+    const tipo = url.searchParams.get('tipo') === 'arte' ? 'arte' : 'doa';
+    const lat = Number(url.searchParams.get('lat'));
+    const lon = Number(url.searchParams.get('lon'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      throw falha(400, 'Coordenadas inválidas.');
+    }
+    try {
+      const dados = await buscarLocaisExternos(tipo, lat, lon);
+      return json(res, 200, { dados });
+    } catch {
+      return json(res, 200, { dados: [] });
+    }
+  }
 
   // Verificação de senha do Administrador
   if (p === '/api/admin/verificar' && m === 'POST') {
