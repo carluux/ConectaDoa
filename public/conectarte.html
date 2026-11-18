@@ -48,8 +48,8 @@
         </a>
 
         <a href="/sobre-arte.html" class="hidden md:inline-flex text-sm font-semibold text-slate-600 hover:text-[#B84FCE] px-2.5 py-2 rounded-lg transition">
-        Sobre Nós
-      </a>
+          Sobre Nós
+        </a>
 
         <span id="badgeAdmin" class="hidden items-center gap-1.5 bg-[#FCEF04] text-slate-900 border border-yellow-400 text-xs font-extrabold px-2.5 py-1 rounded-full">
           <i class="ph-fill ph-shield-check text-sm"></i>
@@ -146,14 +146,21 @@
   <main id="listaEventos" class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-        <div class="md:col-span-5 relative">
-          <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-          <input
-            id="inputBusca"
-            type="text"
-            placeholder="Buscar por bairro, dança, leitura, música..."
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-[#F6F6F6] focus:bg-white focus:border-[#B84FCE] focus:outline-none text-sm"
-          />
+        <div class="md:col-span-5 flex items-center gap-2">
+          <div class="relative flex-1">
+            <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <input
+              id="inputBusca"
+              type="text"
+              placeholder="Buscar por bairro, dança, leitura..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-[#F6F6F6] focus:bg-white focus:border-[#B84FCE] focus:outline-none text-sm"
+            />
+          </div>
+          <button id="btnPertoDeMimArte" type="button" title="Detectar meu bairro pelo GPS"
+            class="inline-flex items-center gap-1.5 bg-[#F3E5F7] hover:bg-[#e8cef0] text-[#8E32A3] border border-[#B84FCE]/30 font-bold text-xs px-3 py-2.5 rounded-xl shrink-0 transition cursor-pointer">
+            <i class="ph-fill ph-crosshair text-base text-[#B84FCE]"></i>
+            <span class="hidden sm:inline">Perto de mim</span>
+          </button>
         </div>
 
         <div class="md:col-span-4">
@@ -640,6 +647,46 @@
         alert('Senha incorreta.');
       }
     };
+
+    document.getElementById('btnPertoDeMimArte').addEventListener('click', () => {
+      const btn = document.getElementById('btnPertoDeMimArte');
+      if (!navigator.geolocation) {
+        alert('Seu navegador não suporta geolocalização.');
+        return;
+      }
+
+      const htmlOriginal = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-base"></i><span>Localizando...</span>';
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=pt-BR`);
+            const geo = await resp.json();
+            const end = geo.address || {};
+            const bairro = end.suburb || end.neighbourhood || end.city_district || end.town || end.city || '';
+
+            if (!bairro) throw new Error('Não foi possível identificar o nome do seu bairro.');
+
+            document.getElementById('inputBusca').value = bairro;
+            await carregarEventos();
+          } catch (err) {
+            alert(err.message || 'Erro ao consultar localização.');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = htmlOriginal;
+          }
+        },
+        () => {
+          btn.disabled = false;
+          btn.innerHTML = htmlOriginal;
+          alert('Permissão de localização negada. Digite seu bairro manualmente na busca.');
+        },
+        { timeout: 10000 }
+      );
+    });
 
     document.getElementById('inputBusca').addEventListener('input', carregarEventos);
     document.getElementById('selectCategoria').addEventListener('change', carregarEventos);
