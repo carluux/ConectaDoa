@@ -91,6 +91,40 @@ function validar(b) {
   return { d, e };
 }
 
+// ---------- Validação ConectaArte ----------
+const CATS_ARTE = ['Dança', 'Música', 'Artes Visuais', 'Leitura', 'Lutas & Capoeira'];
+function validarArte(b) {
+  b = b && typeof b === 'object' && !Array.isArray(b) ? b : {};
+  const lim = (v, max = 200) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+
+  const titulo = lim(b.titulo, 120);
+  const categoria = lim(b.categoria, 50);
+  const bairro = lim(b.bairro, 60);
+  const endereco = lim(b.endereco, 180);
+  const data_horario = lim(b.data_horario, 80);
+  const entrada = lim(b.entrada, 80);
+  const descricao = lim(b.descricao, 400);
+  const organizador = lim(b.organizador, 100);
+  const destaque = b.destaque ? 1 : 0;
+
+  let contato = String(b.contato ?? '').replace(/\D/g, '');
+  if (contato.length === 10 || contato.length === 11) contato = '55' + contato;
+
+  const rawInsta = lim(b.instagram, 40).replace(/^@+/, '');
+  if (rawInsta && !/^[a-zA-Z0-9._]{1,30}$/.test(rawInsta)) {
+    throw falha(422, 'Instagram inválido. Informe apenas o @usuário (letras, números, ponto ou underline).');
+  }
+  const instagram = rawInsta ? `@${rawInsta}` : '';
+
+  if (titulo.length < 3 || !CATS_ARTE.includes(categoria) || bairro.length < 2 || endereco.length < 5 ||
+      data_horario.length < 3 || entrada.length < 3 || descricao.length < 10 || organizador.length < 2 ||
+      !/^55[1-9]\d{9,10}$/.test(contato)) {
+    throw falha(422, 'Preencha todos os campos obrigatórios corretamente e informe um WhatsApp válido com DDD.');
+  }
+
+  return { titulo, categoria, bairro, endereco, data_horario, entrada, descricao, organizador, contato, instagram, destaque };
+}
+
 function temPermissao(req, rowHash) {
   const auth = req.headers.authorization || '';
   const ch = req.headers['x-chave-edicao'];
@@ -127,7 +161,8 @@ function corpo(req) {
 }
 
 async function api(req, res, url) {
-  const ip = (process.env.TRUST_PROXY === '1' && req.headers['x-forwarded-for']?.split(',')[0].trim()) || req.socket.remoteAddress;
+  const fwd = process.env.TRUST_PROXY !== '0' ? req.headers['x-forwarded-for']?.split(',')[0].trim() : '';
+  const ip = fwd || req.socket.remoteAddress || 'unknown';
   const espera = limitar('g' + ip, 120, 60000);
   if (espera) { res.setHeader('Retry-After', espera); throw falha(429, 'Muitas requisições. Aguarde um instante.'); }
   const p = url.pathname, m = req.method;
@@ -135,6 +170,7 @@ async function api(req, res, url) {
   // Verificação de senha do Administrador
   if (p === '/api/admin/verificar' && m === 'POST') {
     if (limitar('adm' + ip, 10, 60000)) throw falha(429, 'Muitas tentativas. Aguarde 1 minuto.');
+    if (!(req.headers['content-type'] || '').includes('application/json')) throw falha(415, 'Envie JSON.');
     const b = await corpo(req);
     const senha = typeof b.senha === 'string' ? b.senha : '';
     if (!ADMIN || !igual(senha, ADMIN)) throw falha(403, 'Senha de administrador incorreta.');
@@ -213,44 +249,39 @@ async function api(req, res, url) {
   // --- ROTAS CONECTAARTE (/api/arte) ---
   if (p === '/api/arte' && m === 'GET') {
     const q = url.searchParams, where = [], args = [];
-    const b = norm(q.get('busca') || '').trim();
+    const b = norm(q.get('busca') || '').slice(0, 100).trim();
     if (b) { where.push("busca LIKE ? ESCAPE '\\'"); args.push(`%${b.replace(/[\\%_]/g, '\\$&')}%`); }
     const cat = q.get('categoria') || '';
     if (cat && cat !== 'Todas') { where.push('categoria=?'); args.push(cat); }
     const ent = q.get('entrada') || '';
     if (ent && ent !== 'Todas') { where.push("entrada LIKE ? ESCAPE '\\'"); args.push(`%${ent.replace(/[\\%_]/g, '\\$&')}%`); }
     const W = where.length ? 'WHERE ' + where.join(' AND ') : '';
-    const rows = db.prepare(`SELECT id,titulo,categoria,bairro,endereco,data_horario,entrada,descricao,organizador,contato,instagram,destaque,conexoes,criado_em FROM eventos_arte ${W} ORDER BY destaque DESC, id DESC`).all(...args).map(x => ({ ...x }));
+    const rows = db.prepare(`SELECT id,titulo,categoria,bairro,endereco,data_horario,entrada,descricao,organizador,contato,instagram,destaque,conexoes,criado_em FROM eventos_arte ${W} ORDER BY destaque DESC, id DESC LIMIT 100`).all(...args).map(x => ({ ...x }));
     return json(res, 200, rows);
   }
 
   if (p === '/api/arte' && m === 'POST') {
-    const b = await corpo(req);
-    const lim = (v, max = 200) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
-    const titulo = lim(b.titulo, 120), categoria = lim(b.categoria, 50), bairro = lim(b.bairro, 60);
-    const endereco = lim(b.endereco, 180), data_horario = lim(b.data_horario, 80), entrada = lim(b.entrada, 80);
-    const descricao = lim(b.descricao, 400), organizador = lim(b.organizador, 100), instagram = lim(b.instagram, 60);
-    const destaque = b.destaque ? 1 : 0;
-    let contato = String(b.contato ?? '').replace(/\D/g, '');
-    if (contato.length === 10 || contato.length === 11) contato = '55' + contato;
+    if (limitar('arte' + ip, 10, 3600000)) throw falha(429, 'Limite de cadastros por hora atingido.');
+    if (!(req.headers['content-type'] || '').includes('application/json')) throw falha(415, 'Envie JSON.');
 
-    if (!titulo || !categoria || !bairro || !endereco || !data_horario || !entrada || !descricao || !organizador || contato.length < 12) {
-      throw falha(422, 'Preencha todos os campos obrigatórios e um WhatsApp válido com DDD.');
-    }
-
+    const d = validarArte(await corpo(req));
     const chave = crypto.randomBytes(24).toString('hex');
-    const busca = norm([titulo, categoria, bairro, endereco, descricao, organizador].join(' '));
+    const busca = norm([d.titulo, d.categoria, d.bairro, d.endereco, d.descricao, d.organizador].join(' '));
     const info = db.prepare(`INSERT INTO eventos_arte(titulo,categoria,bairro,endereco,data_horario,entrada,descricao,organizador,contato,instagram,destaque,conexoes,chave_hash,busca,criado_em) VALUES(?,?,?,?,?,?,?,?,?,?,?,1,?,?,?)`)
-      .run(titulo, categoria, bairro, endereco, data_horario, entrada, descricao, organizador, contato, instagram, destaque, sha(chave).toString('hex'), busca, new Date().toISOString());
+      .run(d.titulo, d.categoria, d.bairro, d.endereco, d.data_horario, d.entrada, d.descricao, d.organizador, d.contato, d.instagram, d.destaque, sha(chave).toString('hex'), busca, new Date().toISOString());
     return json(res, 201, { id: Number(info.lastInsertRowid), chaveEdicao: chave });
   }
 
   const rConn = p.match(/^\/api\/arte\/(\d{1,12})\/conectar$/);
   if (rConn && m === 'POST') {
     const id = +rConn[1];
+    if (limitar('conn' + ip + ':' + id, 3, 3600000)) {
+      throw falha(429, 'Limite de interações atingido para este evento.');
+    }
     db.prepare('UPDATE eventos_arte SET conexoes = conexoes + 1 WHERE id=?').run(id);
     const row = db.prepare('SELECT conexoes FROM eventos_arte WHERE id=?').get(id);
-    return json(res, 200, { conexoes: row ? row.conexoes : 0 });
+    if (!row) throw falha(404, 'Evento não encontrado.');
+    return json(res, 200, { conexoes: row.conexoes });
   }
 
   const rArte = p.match(/^\/api\/arte\/(\d{1,12})$/);
@@ -268,18 +299,11 @@ async function api(req, res, url) {
       res.writeHead(204); return res.end();
     }
     if (m === 'PUT') {
-      const b = await corpo(req);
-      const lim = (v, max = 200) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
-      const titulo = lim(b.titulo, 120), categoria = lim(b.categoria, 50), bairro = lim(b.bairro, 60);
-      const endereco = lim(b.endereco, 180), data_horario = lim(b.data_horario, 80), entrada = lim(b.entrada, 80);
-      const descricao = lim(b.descricao, 400), organizador = lim(b.organizador, 100), instagram = lim(b.instagram, 60);
-      const destaque = b.destaque ? 1 : 0;
-      let contato = String(b.contato ?? '').replace(/\D/g, '');
-      if (contato.length === 10 || contato.length === 11) contato = '55' + contato;
-
-      const busca = norm([titulo, categoria, bairro, endereco, descricao, organizador].join(' '));
+      if (!(req.headers['content-type'] || '').includes('application/json')) throw falha(415, 'Envie JSON.');
+      const d = validarArte(await corpo(req));
+      const busca = norm([d.titulo, d.categoria, d.bairro, d.endereco, d.descricao, d.organizador].join(' '));
       db.prepare(`UPDATE eventos_arte SET titulo=?, categoria=?, bairro=?, endereco=?, data_horario=?, entrada=?, descricao=?, organizador=?, contato=?, instagram=?, destaque=?, busca=? WHERE id=?`)
-        .run(titulo, categoria, bairro, endereco, data_horario, entrada, descricao, organizador, contato, instagram, destaque, busca, id);
+        .run(d.titulo, d.categoria, d.bairro, d.endereco, d.data_horario, d.entrada, d.descricao, d.organizador, d.contato, d.instagram, d.destaque, busca, id);
       return json(res, 200, { atualizado: true });
     }
   }
